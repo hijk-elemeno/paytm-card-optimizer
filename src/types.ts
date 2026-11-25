@@ -3,6 +3,7 @@ export type Tab = 'home' | 'ask' | 'rewards' | 'consent';
 export type ModalKind = 'entry' | 'tier0' | 'pdf' | 'aa' | null;
 // Fixed demo date so due-date nudges look the same in every interview.
 export const DEMO_DAY = 1;
+export const LEVEL_NAME = ['Basic', 'Statement added', 'Auto-sync on'] as const;
 export const DEMO_DATE_LABEL = '1 Dec 2026';
 export const maskOf = (cardId: string) => {
   let h = 0;

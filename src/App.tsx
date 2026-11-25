@@ -23,7 +23,7 @@ const TABS: { id: Tab; label: string; icon: typeof Bot }[] = [
   { id: 'home', label: 'Cards home', icon: Home },
   { id: 'ask', label: 'Ask', icon: Bot },
   { id: 'rewards', label: 'Rewards', icon: Gift },
-  { id: 'consent', label: 'Consent', icon: ShieldCheck },
+  { id: 'consent', label: 'Privacy', icon: ShieldCheck },
 ];
 
 export default function App() {
@@ -60,7 +60,7 @@ export default function App() {
     setTier(t);
     setModal(null);
     if (t === 0) setUpgradeOptIn(false);
-    notify(t === 0 ? 'Tier 0: card names only' : t === 1 ? 'Tier 1: statement linked' : 'Tier 2: live AA sync on');
+    notify(t === 0 ? 'Using card names only' : t === 1 ? 'Statement added' : 'Auto-sync with banks is on');
   };
   const resetAll = () => {
     setTier(0); setSelectedCards(persona.cards); setChat([]); setPaid({}); setUpgradeOptIn(false);
@@ -68,7 +68,7 @@ export default function App() {
   };
   const eraseAll = () => {
     setTier(0); setChat([]); setPaid({}); setUpgradeOptIn(false); setTab('home');
-    notify('All parsed data erased. You are back at Tier 0.');
+    notify('All your data is deleted. Starting fresh with just your card names.');
   };
 
   const cardIds = tier === 0 ? selectedCards : persona.cards;
@@ -77,7 +77,7 @@ export default function App() {
   const ask = (q: string) => { setPendingAsk(q); setTab('ask'); };
   const screen = {
     home: <CardsHome state={state} onAsk={ask} onUnlock={() => setModal('pdf')} onTab={setTab}
-      onPaid={(id, ref) => { setPaid((p) => ({ ...p, [id]: ref })); notify('Paid via Paytm UPI. Bank credit in 24-48 hrs.'); }} />,
+      onPaid={(id, ref) => { setPaid((p) => ({ ...p, [id]: ref })); notify('Paid via Paytm UPI. Reaches your bank in 1–2 days.'); }} />,
     ask: <BestCardAI state={state} chat={chat} setChat={setChat} pending={pendingAsk} clearPending={() => setPendingAsk(null)} onUnlock={() => setModal('pdf')} notify={notify} onPayBill={() => setTab('home')} />,
     rewards: <SpendDashboard state={state} onUnlock={() => setModal('pdf')} onLive={() => setModal('aa')} notify={notify} />,
     consent: (
@@ -88,8 +88,8 @@ export default function App() {
         onLive={() => setModal('aa')}
         onEditCards={() => setModal('tier0')}
         onRevoke={(t) => {
-          if (t === 2) { setTier(1); notify('Account Aggregator consent revoked. Live sync stopped.'); }
-          else { setTier(0); setUpgradeOptIn(false); notify('Statement data deleted. You are on Tier 0.'); }
+          if (t === 2) { setTier(1); notify('Auto-sync stopped.'); }
+          else { setTier(0); setUpgradeOptIn(false); notify('Statement data deleted.'); }
         }}
         setRemindersOn={(v) => { setRemindersOn(v); notify(v ? 'Reminders on (max 3 a week)' : 'All reminders off'); }}
         setUpgradeOptIn={setUpgradeOptIn}
@@ -115,9 +115,9 @@ export default function App() {
             setSelected={setSelectedCards}
             onClose={() => setModal(null)}
             onEntry={() => setModal('tier0')}
-            onTier0Done={() => { setModal(null); notify('Best Card AI and Perk Decoder unlocked'); }}
-            onPdfDone={() => { setTier((t) => (t < 1 ? 1 : t)); setModal(null); setTab('rewards'); notify('Statement parsed and deleted. Spend tracker unlocked.'); }}
-            onAaDone={(offers) => { setTier(2); setModal(null); if (offers) setUpgradeOptIn(true); notify('Live cap sync on via RBI Account Aggregator'); }}
+            onTier0Done={() => { setModal(null); notify('Done! Ask which card to use, or browse your card benefits.'); }}
+            onPdfDone={() => { setTier((t) => (t < 1 ? 1 : t)); setModal(null); setTab('rewards'); notify('Statement read and deleted. Your spends and rewards are ready.'); }}
+            onAaDone={(offers) => { setTier(2); setModal(null); if (offers) setUpgradeOptIn(true); notify('Auto-sync with your banks is on'); }}
           />
           {toast && (
             <div role="status" className="absolute inset-x-4 top-24 z-50 mx-auto max-w-[600px] fade-up rounded-xl bg-navy text-white text-sm px-4 py-3 shadow-lg">

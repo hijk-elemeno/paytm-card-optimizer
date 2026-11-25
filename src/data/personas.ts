@@ -43,7 +43,7 @@ export const PERSONAS: Persona[] = [
     ],
     milestones: [
       { cardId: 'hdfc_millennia', kind: 'fee', label: 'Annual fee waiver', done: 94500, target: 100000, reward: 'save ₹1,180 renewal fee', deadline: 'in 14 days' },
-      { cardId: 'hdfc_millennia', kind: 'lounge', label: 'Domestic lounge eligibility (this quarter)', done: 38000, target: 50000, reward: 'avoid a lounge decline next quarter', deadline: 'by 31 Dec' },
+      { cardId: 'hdfc_millennia', kind: 'lounge', label: 'Free airport lounge access', done: 38000, target: 50000, reward: 'keep free lounge access next quarter', deadline: 'by 31 Dec' },
     ],
     monthly: [
       { merchantId: 'amazon', amount: 4000 }, { merchantId: 'flipkart', amount: 3000 }, { merchantId: 'myntra', amount: 2000 },
@@ -73,14 +73,14 @@ export const PERSONAS: Persona[] = [
       { cardId: 'paytm_sbi', dueDay: 27, amount: 8950, minDue: 448 },
     ],
     vouchers: [
-      { title: '₹1,000 milestone Amazon voucher', cardId: 'sbi_cashback', value: 1000, expiresInDays: 6, code: 'AMZ-7Q4K-NV91' },
+      { title: '₹1,000 Amazon reward voucher', cardId: 'sbi_cashback', value: 1000, expiresInDays: 6, code: 'AMZ-7Q4K-NV91' },
       { title: '18,400 Regalia Gold points', cardId: 'hdfc_regalia_gold', value: 9200, expiresInDays: 41, note: 'Oldest 2,100 points lapse first' },
       { title: 'Taj Experiences voucher', cardId: 'amex_mrcc', value: 3000, expiresInDays: 63 },
     ],
     milestones: [
-      { cardId: 'hdfc_regalia_gold', kind: 'bonus', label: 'Quarterly ₹1.5 lakh milestone', done: 135000, target: 150000, reward: 'earn a ₹1,500 voucher', deadline: 'by 31 Dec' },
+      { cardId: 'hdfc_regalia_gold', kind: 'bonus', label: '₹1.5 lakh quarterly bonus', done: 135000, target: 150000, reward: 'earn a ₹1,500 voucher', deadline: 'by 31 Dec' },
       { cardId: 'sbi_cashback', kind: 'fee', label: 'Annual fee waiver', done: 186000, target: 200000, reward: 'save ₹1,179 renewal fee', deadline: 'in 21 days' },
-      { cardId: 'amex_mrcc', kind: 'bonus', label: '₹20,000 monthly bonus', done: 4000, target: 20000, reward: 'earn 1,000 bonus points (₹500)', deadline: 'this cycle' },
+      { cardId: 'amex_mrcc', kind: 'bonus', label: '₹20,000 monthly bonus', done: 4000, target: 20000, reward: 'earn 1,000 bonus points (₹500)', deadline: 'this month' },
     ],
     monthly: [
       { merchantId: 'amazon', amount: 6000 }, { merchantId: 'flipkart', amount: 4000 }, { merchantId: 'croma', amount: 3000 },

@@ -31,9 +31,9 @@ function capNotes(r: Ranked[], live: boolean) {
     for (const c of x.calc.caps) {
       if (c.hitAt === undefined) continue;
       if (c.usedBefore > 0) {
-        notes.push(`${x.card.name} has only ${inr(c.cap - c.usedBefore)} left in its ${inr(c.cap)} ${c.label} this cycle (${pctStr(x.effective)} effective on this spend).`);
+        notes.push(`${x.card.name} can only give you ${inr(c.cap - c.usedBefore)} more this month (its ${c.label} is ${inr(c.cap)}), so you'd get ${pctStr(x.effective)} back on this spend.`);
       } else {
-        notes.push(`${x.card.name} hits its ${inr(c.cap)} ${c.label} at ${inr(c.hitAt)}, so the effective return drops to ${pctStr(x.effective)}.`);
+        notes.push(`${x.card.name} stops giving cashback after ${inr(c.cap)} a month (reached at ${inr(c.hitAt)} of spend), so you get ${pctStr(x.effective)} back overall.`);
       }
     }
   }
@@ -47,9 +47,9 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
   const o = e.outcome;
   const footer = (
     <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-ok"><ShieldCheck size={12} /> Rule checked: {RULES_VERIFIED} (MITC)</span>
-      <button onClick={() => notify('Verify: open the issuer MITC page for this rule (link in production build).')} className="rounded-full border border-gray-200 px-2 py-0.5 text-gray-600">Verify</button>
-      <button onClick={() => notify('Thanks. Ops checks reported rules within 48 hours.')} className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5 text-gray-600"><Flag size={11} /> Report error</button>
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-ok"><ShieldCheck size={12} /> Card terms checked: {RULES_VERIFIED}</span>
+      <button onClick={() => notify("Opens the bank's official card terms (prototype).")} className="rounded-full border border-gray-200 px-2 py-0.5 text-gray-600">Verify</button>
+      <button onClick={() => notify("Thanks! We'll check this and fix it within 48 hours.")} className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2 py-0.5 text-gray-600"><Flag size={11} /> Report error</button>
     </div>
   );
 
@@ -61,7 +61,7 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
       <div className="rounded-2xl bg-white p-4 text-sm shadow-sm">
         <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-alert">
           <Ban size={18} className="shrink-0 mt-0.5" />
-          <div><b>None of your cards earn rewards on {o.merchant.name.toLowerCase()}</b> (MCC {o.merchant.mcc} is excluded). Pay the way that has the lowest fee instead.</div>
+          <div><b>None of your cards give rewards on {o.merchant.name.toLowerCase()}.</b> Pay the way that has the lowest fee instead.</div>
         </div>
         <ul className="mt-3 space-y-1 text-xs text-gray-600">
           {o.ranked.map((x) => <li key={x.card.id}>• {x.calc.formula[0]}</li>)}
@@ -76,7 +76,7 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
       <div className="rounded-2xl bg-white p-4 text-sm shadow-sm">
         <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-amber-900">
           <AlertTriangle size={18} className="shrink-0 mt-0.5 text-warn" />
-          <div>Merchant category (MCC) unverified for <b>{o.label}</b>. Showing the top 2 safe cards on their base rate rather than guessing.</div>
+          <div>We don't know what kind of shop <b>{o.label}</b> is yet, so here are your 2 safest cards based on what they give back anywhere.</div>
         </div>
         <ol className="mt-3 space-y-2">
           {o.ranked.map((x, i) => (
@@ -99,7 +99,7 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
       <div className="rounded-xl bg-cyan-tint p-3">
         <div className="flex items-center justify-between text-[11px]">
           <span className="font-semibold uppercase tracking-wide text-navy">Best card</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 font-medium text-navy"><Zap size={11} className="text-cyan" /> {e.secs.toFixed(1)}s • Deterministic Rules Engine</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 font-medium text-navy"><Zap size={11} className="text-cyan" /> Answered in {e.secs.toFixed(1)}s</span>
         </div>
         <div className="mt-2 flex items-end justify-between gap-2">
           <div>
@@ -120,7 +120,7 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
       ))}
       {!o.liveCaps && (
         <button onClick={onUnlock} className="mt-2 w-full rounded-xl border border-dashed border-gray-300 p-2.5 text-left text-xs text-gray-600">
-          Tier 0 assumes this month's caps are unused. <span className="font-semibold text-navy">Upload 1 statement to make this cap-aware →</span>
+          This assumes you haven't used up any monthly cashback limits yet. <span className="font-semibold text-navy">Add a statement for an exact answer →</span>
         </button>
       )}
 
@@ -136,17 +136,17 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
       )}
 
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="mt-3 flex w-full items-center justify-between text-xs font-semibold text-navy">
-        Calculation proof and MITC source <ChevronDown size={15} className={`transition ${open ? 'rotate-180' : ''}`} />
+        How we worked this out <ChevronDown size={15} className={`transition ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="mt-2 space-y-1.5 rounded-xl bg-canvas p-3 text-xs text-gray-700">
-          <div><b>Detected:</b> {o.merchant.name} · MCC {o.merchant.mcc} · {o.merchant.category.replace('_', ' ')} · {o.merchant.channel}</div>
+          <div><b>Shop:</b> {o.merchant.name} · {o.merchant.category.replace('_', ' ')} · {o.merchant.channel === 'online' ? 'online' : 'in store'}</div>
           {win.calc.formula.map((f) => <div key={f}>• {f}</div>)}
           {win.calc.caps.map((c) => (
-            <div key={c.label}><b>Cap:</b> {inr(c.usedBefore)} used before → {inr(c.usedAfter)} after, of {inr(c.cap)} ({c.label})</div>
+            <div key={c.label}><b>Monthly limit:</b> {inr(c.usedBefore)} used before this → {inr(c.usedAfter)} after, out of {inr(c.cap)}</div>
           ))}
-          <div><b>Card state used:</b> {o.liveCaps ? 'linked statement (caps and milestones live)' : 'none, Tier 0 (caps assumed unused)'}</div>
-          <div className="text-gray-500">Every ₹ is computed by the rules engine. In production an LLM only phrases this explanation.</div>
+          <div><b>Based on:</b> {o.liveCaps ? 'your latest statement, including limits already used this month' : 'card terms only (add a statement to include what you have already used)'}</div>
+          <div className="text-gray-500">Every ₹ comes from the card's published terms, not a guess.</div>
         </div>
       )}
 
@@ -192,7 +192,7 @@ export default function BestCardAI({ state, chat, setChat, pending, clearPending
         {chat.length === 0 && !busy && (
           <div className="rounded-2xl bg-white p-4 shadow-sm">
             <div className="flex items-center gap-2 font-semibold text-navy"><Sparkles size={18} className="text-cyan" /> Which card for this?</div>
-            <p className="mt-1 text-sm text-gray-600">Type an amount and a merchant. I rank your {state.selectedCards.length} cards by the rupees you actually get back after caps and exclusions.</p>
+            <p className="mt-1 text-sm text-gray-600">Type an amount and a merchant. I'll compare your {state.selectedCards.length} cards and tell you which one gives you the most money back, after monthly limits.</p>
           </div>
         )}
         {chat.map((e) => (
@@ -202,7 +202,7 @@ export default function BestCardAI({ state, chat, setChat, pending, clearPending
               bill={e.outcome.kind === 'ranked' ? state.persona.bills.find((b) => e.outcome.kind === 'ranked' && b.cardId === e.outcome.ranked[0].card.id) : undefined} />
           </div>
         ))}
-        {busy && <div className="w-fit rounded-2xl bg-white px-4 py-3 text-sm text-gray-500 shadow-sm">Checking caps and rules…</div>}
+        {busy && <div className="w-fit rounded-2xl bg-white px-4 py-3 text-sm text-gray-500 shadow-sm">Comparing your cards…</div>}
         <div ref={end} />
       </div>
       <div className="sticky bottom-0 border-t border-gray-200 bg-canvas/95 px-3 pb-3 pt-2 backdrop-blur">

@@ -62,7 +62,7 @@ export default function CardsHome({ state, onAsk, onUnlock, onTab, onPaid }: Pro
       ) : (
         <button onClick={onUnlock} className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-white p-3 text-left text-sm text-gray-600">
           <Lock size={18} className="text-navy" />
-          <span className="flex-1">Upload 1 statement to see expiring points, vouchers and milestone gaps</span>
+          <span className="flex-1">Add a statement to see expiring points, vouchers and spend goals</span>
           <ChevronRight size={16} className="text-gray-400" />
         </button>
       )}
@@ -70,7 +70,7 @@ export default function CardsHome({ state, onAsk, onUnlock, onTab, onPaid }: Pro
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-navy">Best card by category</h2>
-          <span className="text-[11px] text-gray-500">{states ? 'after caps used' : 'headline rates'}</span>
+          <span className="text-[11px] text-gray-500">{states ? 'after this month\'s limits' : 'money back on ₹5,000'}</span>
         </div>
         <ul className="mt-2 divide-y divide-gray-100">
           {BROWSE.map(({ label, merchantId }) => {
@@ -91,7 +91,7 @@ export default function CardsHome({ state, onAsk, onUnlock, onTab, onPaid }: Pro
             );
           })}
         </ul>
-        <p className="mt-1 text-[11px] text-gray-500">Rate on a ₹5,000 spend. Tap a row to see the full maths.</p>
+        <p className="mt-1 text-[11px] text-gray-500">Tap a row to see how we worked it out.</p>
       </section>
 
       <BillPayBBPS state={state} onPaid={onPaid} />

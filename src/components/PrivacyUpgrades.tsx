@@ -36,16 +36,16 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
   const spend6m = p.monthly.reduce((s, t) => s + t.amount, 0) * 6;
 
   const tiers = [
-    { n: 0, title: 'Tier 0 · card names', on: true, detail: 'Card name and last 4 digits, on this phone', action: <button onClick={onEditCards} className="text-xs font-semibold text-navy">Edit</button> },
-    { n: 1, title: 'Tier 1 · Nov statement', on: state.tier >= 1, detail: state.tier >= 1 ? 'Merchant category and amount only. PDF deleted after parsing' : 'Not shared', action: state.tier < 1 ? <button onClick={onUnlock} className="text-xs font-semibold text-navy">Add</button> : <button onClick={() => onRevoke(1)} className="text-xs font-semibold text-alert">Delete</button> },
-    { n: 2, title: 'Tier 2 · Account Aggregator', on: state.tier >= 2, detail: state.tier >= 2 ? 'Consent AA-PAYTM-2026-8841 · valid till 1 Mar 2027' : 'Not shared', action: state.tier < 2 ? <button onClick={onLive} className="text-xs font-semibold text-navy">Enable</button> : <button onClick={() => onRevoke(2)} className="text-xs font-semibold text-alert">Revoke</button> },
+    { n: 0, title: 'Your cards', on: true, detail: 'Card name and last 4 digits, on this phone', action: <button onClick={onEditCards} className="text-xs font-semibold text-navy">Edit</button> },
+    { n: 1, title: 'November statement', on: state.tier >= 1, detail: state.tier >= 1 ? 'Only where you spent and how much. The PDF is deleted.' : 'Not shared', action: state.tier < 1 ? <button onClick={onUnlock} className="text-xs font-semibold text-navy">Add</button> : <button onClick={() => onRevoke(1)} className="text-xs font-semibold text-alert">Delete</button> },
+    { n: 2, title: 'Auto-sync with your banks', on: state.tier >= 2, detail: state.tier >= 2 ? 'On till 1 Mar 2027 · ref AA-PAYTM-2026-8841' : 'Not shared', action: state.tier < 2 ? <button onClick={onLive} className="text-xs font-semibold text-navy">Enable</button> : <button onClick={() => onRevoke(2)} className="text-xs font-semibold text-alert">Revoke</button> },
   ];
 
   return (
     <div className="space-y-4 p-4">
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="font-semibold text-navy">Your data</h2>
-        <p className="text-xs text-gray-500">Consent centre · DPDP Act 2023. Every step is optional and revocable.</p>
+        <p className="text-xs text-gray-500">Everything here is optional. You can stop sharing or delete it any time.</p>
         <ul className="mt-3 space-y-3">
           {tiers.map((t) => (
             <li key={t.n} className="flex items-start gap-3">
@@ -70,7 +70,7 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
         <BellRing size={20} className="text-navy" />
         <div className="flex-1">
           <div className="text-sm font-semibold">Reminders</div>
-          <div className="text-xs text-gray-500">Expiring rewards, milestones and dues. Never more than 3 a week.</div>
+          <div className="text-xs text-gray-500">Expiring rewards, spend goals and bill due dates. Never more than 3 a week.</div>
         </div>
         <Toggle on={state.remindersOn} onChange={setRemindersOn} label="Reminders" />
       </section>
@@ -78,10 +78,10 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
       <section className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
         <PhoneOff size={20} className="text-navy" />
         <div className="flex-1">
-          <div className="text-sm font-semibold">Zero Sales-Call Guarantee</div>
-          <div className="text-xs text-gray-500">Your data is never passed to banks or agents for calls.</div>
+          <div className="text-sm font-semibold">No sales calls, ever</div>
+          <div className="text-xs text-gray-500">We never share your details with banks or agents to call you.</div>
         </div>
-        <Toggle on={state.salesCallLock} onChange={setSalesCallLock} label="Zero Sales-Call Guarantee" />
+        <Toggle on={state.salesCallLock} onChange={setSalesCallLock} label="No sales calls" />
       </section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
@@ -92,7 +92,7 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
               <div className="text-sm font-semibold">Analyse my spends for better cards</div>
               <Toggle on={state.upgradeOptIn} onChange={setUpgradeOptIn} label="Analyse my spends for better cards" />
             </div>
-            <div className="text-xs text-gray-500">V2 preview. Off unless you turn it on. Separate from every other consent.</div>
+            <div className="text-xs text-gray-500">Coming soon. Off unless you turn it on, and separate from everything else.</div>
           </div>
         </div>
         {state.upgradeOptIn && (
@@ -102,7 +102,7 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
             </button>
           ) : (
             <div className="mt-3 space-y-2 fade-up">
-              <div className="inline-flex rounded-full bg-cyan-tint px-2.5 py-1 text-[11px] font-semibold text-navy">Ranked strictly by net ₹ saved • Zero commission bias</div>
+              <div className="inline-flex rounded-full bg-cyan-tint px-2.5 py-1 text-[11px] font-semibold text-navy">Ranked only by the money you'd save</div>
               {shown.length === 0 ? (
                 <p className="text-sm text-gray-700">No card would save you more than {inr(MIN_ANNUAL_SAVING)} a year over the cards you hold, so we are not suggesting one.</p>
               ) : (
@@ -110,12 +110,12 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
                   <p className="text-sm text-gray-700">
                     Replaying your last 6 months of spends ({inr(spend6m)}) through every card, adding{' '}
                     {shown.map((o, i) => <span key={o.card.id}>{i > 0 && ' or '}<b>{o.card.name}</b></span>)}{' '}
-                    would have earned <b>{inr(shown[0].netSixMonth)} extra</b> net of annual fee.
+                    would have earned <b>{inr(shown[0].netSixMonth)} extra</b>, after paying its annual fee.
                   </p>
                   {shown.map((o) => (
                     <div key={o.card.id} className="rounded-xl border border-gray-100 p-3 text-xs">
                       <div className="flex justify-between text-sm font-semibold"><span>{o.card.name}</span><span className="tnum text-ok">+{inr(o.netAnnual)} / yr</span></div>
-                      <div className="tnum mt-1 text-gray-600">6 months: {inr(o.withCardSixMonth)} with it − {inr(o.currentSixMonth)} today − {inr(o.card.annualFee / 2)} half-year fee = {inr(o.netSixMonth)}</div>
+                      <div className="tnum mt-1 text-gray-600">6 months: {inr(o.withCardSixMonth)} with it − {inr(o.currentSixMonth)} today − {inr(o.card.annualFee / 2)} annual fee for 6 months = {inr(o.netSixMonth)}</div>
                     </div>
                   ))}
                 </>
@@ -128,7 +128,7 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="text-sm font-semibold">Delete my card data</div>
-        <p className="text-xs text-gray-500">Clears parsed spends, AA consent and upgrade analysis, and returns you to Tier 0.</p>
+        <p className="text-xs text-gray-500">Deletes your spends, stops auto-sync and starts you fresh with just your card names.</p>
         {confirm ? (
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button onClick={() => setConfirm(false)} className="rounded-xl border border-gray-300 py-2.5 text-sm font-medium">Cancel</button>

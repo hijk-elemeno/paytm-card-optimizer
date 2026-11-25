@@ -17,9 +17,9 @@ interface Props {
 }
 
 const REDACTION = [
-  'Stripping full card number and PAN...',
-  'Keeping masked last 4 digits and merchant MCC only...',
-  'Statement deleted after parsing',
+  'Removing your full card number and personal details...',
+  'Keeping only the last 4 digits, shop names and amounts...',
+  'Deleting the PDF from our system',
 ];
 
 function Sheet({ title, onClose, children }: { title: string; onClose?: () => void; children: React.ReactNode }) {
@@ -46,10 +46,10 @@ function PdfFlow({ persona, onDone, onClose }: { persona: Persona; onDone: () =>
   }, [step, onDone]);
 
   return (
-    <Sheet title="Unlock spend and milestone tracker" onClose={step < 0 ? onClose : undefined}>
+    <Sheet title="See your spends and rewards" onClose={step < 0 ? onClose : undefined}>
       {step < 0 ? (
         <>
-          <p className="text-sm text-gray-600">Upload one password-protected statement PDF. It is parsed on your phone, the PDF is deleted, and only masked card digits, merchant category and amount are kept.</p>
+          <p className="text-sm text-gray-600">Upload one password-protected statement PDF. We read it on your phone, delete the PDF, and keep only the last 4 digits of your card, where you spent and how much.</p>
           <div className="mt-4 rounded-2xl border-2 border-dashed border-gray-300 p-5 text-center">
             <FileText className="mx-auto text-gray-400" size={30} />
             <div className="mt-2 text-sm font-medium text-gray-700">Choose a statement PDF</div>
@@ -58,7 +58,7 @@ function PdfFlow({ persona, onDone, onClose }: { persona: Persona; onDone: () =>
           <button onClick={() => setStep(0)} className="mt-4 w-full rounded-xl bg-navy py-3 font-semibold text-white">
             Use sample statement PDF
           </button>
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-500"><Lock size={13} /> Zero Gmail access. Zero SMS reading. Delete any time.</p>
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-500"><Lock size={13} /> We never read your email or SMS. Delete any time.</p>
         </>
       ) : (
         <>
@@ -66,7 +66,7 @@ function PdfFlow({ persona, onDone, onClose }: { persona: Persona; onDone: () =>
             <FileText size={22} className="text-navy" />
             <div>
               <div className="font-medium">{persona.name}_statement_Nov2026.pdf</div>
-              <div className="text-xs text-gray-500">On-device PII redaction</div>
+              <div className="text-xs text-gray-500">Removing personal details on your phone</div>
             </div>
           </div>
           <ul className="mt-4 space-y-3">
@@ -90,17 +90,17 @@ function AaFlow({ persona, onDone, onClose }: { persona: Persona; onDone: (offer
   const [offers, setOffers] = useState(false);
   const fips = Array.from(new Set(persona.cards.map((id) => CARDS.find((c) => c.id === id)!.issuer))).join(', ');
   const rows: [string, string][] = [
-    ['Consent ID', 'AA-PAYTM-2026-8841'],
-    ['Purpose', 'Spend & Cap Analytics Only'],
-    ['Data fetched', 'Credit card transactions and statement summary'],
-    ['From (FIPs)', fips],
-    ['Frequency', 'Once a day'],
-    ['Validity', '90 Days (till 1 Mar 2027)'],
-    ['Data life', 'Deleted when consent ends or you revoke it'],
+    ['Reference', 'AA-PAYTM-2026-8841'],
+    ['Used for', 'Tracking spends and reward limits only'],
+    ['What we see', 'Your card transactions and statement totals'],
+    ['From', fips],
+    ['How often', 'Once a day'],
+    ['Valid for', '90 days (till 1 Mar 2027)'],
+    ['Your data', 'Deleted when this ends or you stop it'],
   ];
   return (
-    <Sheet title="Account Aggregator consent" onClose={onClose}>
-      <p className="text-xs text-gray-500 -mt-1 mb-3">Simulated consent artefact in the Sahamati / RBI AA format. V2 preview.</p>
+    <Sheet title="Turn on auto-sync with your banks" onClose={onClose}>
+      <p className="text-xs text-gray-500 -mt-1 mb-3">Uses India's RBI-approved Account Aggregator system. You can stop it any time. (Demo of a future feature.)</p>
       <dl className="divide-y divide-gray-100 rounded-xl border border-gray-200 text-sm">
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-4 px-3 py-2">
@@ -113,10 +113,10 @@ function AaFlow({ persona, onDone, onClose }: { persona: Persona; onDone: (offer
         <input type="checkbox" checked={offers} onChange={(e) => setOffers(e.target.checked)} className="mt-0.5 h-4 w-4 accent-navy" />
         <span>
           <span className="font-medium">Show data-backed card upgrade offers</span>
-          <span className="block text-xs text-gray-500">Separate, optional consent (DPDP Act 2023). Off by default. Saying no changes nothing else.</span>
+          <span className="block text-xs text-gray-500">Optional and off unless you tick it. Saying no changes nothing else.</span>
         </span>
       </label>
-      <button onClick={() => onDone(offers)} className="mt-4 w-full rounded-xl bg-navy py-3 font-semibold text-white">Approve consent</button>
+      <button onClick={() => onDone(offers)} className="mt-4 w-full rounded-xl bg-navy py-3 font-semibold text-white">Allow auto-sync</button>
       <button onClick={onClose} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-gray-600">Not now</button>
     </Sheet>
   );
@@ -142,7 +142,7 @@ export default function OnboardingModal(p: Props) {
               <span className="rounded-xl p-2 text-white" style={{ background: card.color }}><CreditCard size={20} /></span>
               <div className="flex-1">
                 <div className="text-sm font-semibold">{card.name} {maskOf(card.id)}</div>
-                <div className="text-xs text-gray-500">Due on the {bill.dueDay}th · fetched via BBPS</div>
+                <div className="text-xs text-gray-500">Due on the {bill.dueDay}th</div>
               </div>
               <div className="tnum text-right font-semibold">₹{bill.amount.toLocaleString('en-IN')}</div>
             </div>
@@ -175,7 +175,7 @@ function CardPicker(p: Props) {
     <Sheet title="Which credit cards do you have?">
       <p className="text-sm text-gray-600">Tap the cards you hold. That is all we need to tell you which card to swipe.</p>
       <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-cyan-tint px-3 py-1.5 text-xs font-semibold text-navy">
-        <ShieldCheck size={14} /> Zero Gmail/SMS Access • Zero Sales-Call Pledge
+        <ShieldCheck size={14} /> We never read your email or SMS · No sales calls
       </div>
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search your card, e.g. Millennia" aria-label="Search cards"
         className="mt-4 w-full rounded-xl border border-gray-300 px-3 py-2.5 text-base outline-none focus:border-navy" />
@@ -193,7 +193,7 @@ function CardPicker(p: Props) {
       {list.length === 0 && (
         <div className="mt-1 rounded-xl bg-canvas p-3 text-sm text-gray-600">
           Card not in our list yet.{' '}
-          {requested ? <span className="font-semibold text-ok">Requested. Ops adds new cards after a rules check.</span>
+          {requested ? <span className="font-semibold text-ok">Thanks! We'll add it once we've checked its terms.</span>
             : <button onClick={() => setRequested(true)} className="font-semibold text-navy">Request it</button>}
         </div>
       )}

@@ -85,7 +85,7 @@ function capped(amount: number, rate: number, bucket: string, cap: number, s: Ca
 }
 
 function excludedResult(m: Merchant, card: string): CalcResult {
-  return { value: 0, excluded: true, formula: [`${card} earns nothing on ${m.name} (MCC ${m.mcc} is excluded in the card's terms)`], caps: [] };
+  return { value: 0, excluded: true, formula: [`${card} earns nothing on ${m.name} (not covered by its rewards)`], caps: [] };
 }
 
 const MILLENNIA_PARTNERS = ['amazon', 'flipkart', 'makemytrip', 'swiggy', 'swiggy_dineout', 'zomato', 'myntra', 'bookmyshow', 'uber'];
@@ -99,21 +99,21 @@ export const CARDS: CardRule[] = [
     compute(amount, m, s) {
       if (this.exclusions.includes(m.category)) return excludedResult(m, this.name);
       if (MILLENNIA_PARTNERS.includes(m.id)) {
-        const c = capped(amount, 0.05, 'partner', 1000, s, 'monthly partner cap');
+        const c = capped(amount, 0.05, 'partner', 1000, s, 'monthly limit on partner brands');
         return { value: c.earned, excluded: false, formula: [`Partner merchant: ${c.line}`], caps: [c.info] };
       }
-      const c = capped(amount, 0.01, 'other', 1000, s, 'monthly cap on other spends');
+      const c = capped(amount, 0.01, 'other', 1000, s, 'monthly limit on other spends');
       return { value: c.earned, excluded: false, formula: [`Other spends: ${c.line}`], caps: [c.info] };
     },
   },
   {
     id: 'sbi_cashback', name: 'SBI Cashback', issuer: 'SBI Card', color: '#0F766E', annualFee: 1179, feeWaiverSpend: 200000,
-    perks: ['5% cashback on all online spends, 1% offline', 'Total cashback capped at ₹5,000 per statement cycle', 'No cashback on rent, utilities, fuel, insurance or wallet loads', 'Fee ₹999 + GST waived at ₹2 lakh yearly spend'],
+    perks: ['5% cashback on all online spends, 1% offline', 'Total cashback up to ₹5,000 a month', 'No cashback on rent, utilities, fuel, insurance or wallet loads', 'Fee ₹999 + GST waived at ₹2 lakh yearly spend'],
     exclusions: ['rent', 'utilities', 'fuel', 'wallet'], baseLabel: '1% offline', baseRate: 0.01,
     compute(amount, m, s) {
       if (this.exclusions.includes(m.category)) return excludedResult(m, this.name);
       const rate = m.channel === 'online' ? 0.05 : 0.01;
-      const c = capped(amount, rate, 'all', 5000, s, 'monthly cashback cap');
+      const c = capped(amount, rate, 'all', 5000, s, 'monthly cashback limit');
       return { value: c.earned, excluded: false, formula: [`${m.channel === 'online' ? 'Online' : 'Offline'} spend: ${c.line}`], caps: [c.info] };
     },
   },
@@ -145,7 +145,7 @@ export const CARDS: CardRule[] = [
   },
   {
     id: 'paytm_sbi', name: 'Paytm SBI Card', issuer: 'SBI Card', color: '#0369A1', annualFee: 1179, feeWaiverSpend: 100000,
-    perks: ['3% on Paytm Travel, Movies and Mini Apps', '2% on other spends in the Paytm app', '1% everywhere else', 'Milestone benefit at ₹1 lakh yearly spend'],
+    perks: ['3% on Paytm Travel, Movies and Mini Apps', '2% on other spends in the Paytm app', '1% everywhere else', 'Bonus when you spend ₹1 lakh in a year'],
     exclusions: ['rent', 'fuel', 'wallet'], baseLabel: '1% elsewhere', baseRate: 0.01,
     compute(amount, m) {
       if (this.exclusions.includes(m.category)) return excludedResult(m, this.name);
@@ -163,9 +163,9 @@ export const CARDS: CardRule[] = [
     compute(amount, m, s) {
       if (this.exclusions.includes(m.category)) return excludedResult(m, this.name);
       let c;
-      if (m.id === 'airtel') c = capped(amount, 0.25, 'airtel', 250, s, 'monthly Airtel cap');
-      else if (m.category === 'utilities') c = capped(amount, 0.10, 'util', 250, s, 'monthly utilities cap');
-      else if (['swiggy', 'swiggy_dineout', 'zomato', 'bigbasket'].includes(m.id)) c = capped(amount, 0.10, 'food', 500, s, 'monthly food and grocery cap');
+      if (m.id === 'airtel') c = capped(amount, 0.25, 'airtel', 250, s, 'monthly Airtel limit');
+      else if (m.category === 'utilities') c = capped(amount, 0.10, 'util', 250, s, 'monthly bills limit');
+      else if (['swiggy', 'swiggy_dineout', 'zomato', 'bigbasket'].includes(m.id)) c = capped(amount, 0.10, 'food', 500, s, 'monthly food and grocery limit');
       if (c) return { value: c.earned, excluded: false, formula: [c.line], caps: [c.info] };
       const v = amount * 0.01;
       return { value: v, excluded: false, formula: [`Other spends: 1% × ₹${amount.toLocaleString('en-IN')} = ₹${r(v).toLocaleString('en-IN')}`], caps: [] };
@@ -184,7 +184,7 @@ export const CARDS: CardRule[] = [
       let milestone: string | undefined;
       if (s.quarterSpend > 0 && s.quarterSpend < 150000 && s.quarterSpend + amount >= 150000) {
         v += 1500;
-        milestone = `Crosses the ₹1.5 lakh quarterly milestone (₹${s.quarterSpend.toLocaleString('en-IN')} spent so far): + ₹1,500 voucher`;
+        milestone = `Crosses the ₹1.5 lakh quarterly spend goal (₹${s.quarterSpend.toLocaleString('en-IN')} spent so far): + ₹1,500 voucher`;
         f.push(milestone);
       }
       return { value: v, excluded: false, formula: f, caps: [], milestone };

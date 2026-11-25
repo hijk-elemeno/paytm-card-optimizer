@@ -25,7 +25,7 @@ export default function BillPayBBPS({ state, onPaid }: { state: AppState; onPaid
       </div>
       <div className="mt-2 flex items-start gap-2 rounded-xl bg-cyan-tint p-2.5 text-xs text-navy">
         <Info size={14} className="mt-0.5 shrink-0" />
-        Bharat Connect (BBPS) settles in 24–48 hrs. Pay by T-4 days to avoid late fees.
+        Card payments take 1–2 days to reach your bank. Pay at least 4 days before the due date to avoid late fees.
       </div>
       {bills.length === 0 && <p className="mt-3 text-sm text-gray-500">No bills fetched for these cards yet.</p>}
       <ol className="relative mt-3 space-y-3 border-l-2 border-gray-100 pl-4">
@@ -46,12 +46,12 @@ export default function BillPayBBPS({ state, onPaid }: { state: AppState; onPaid
               </div>
               {urgent && !ref && (
                 <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-alert">
-                  <BellRing size={12} /> T-4 smart nudge: pay today so it settles in time
+                  <BellRing size={12} /> Pay today so it reaches your bank on time
                 </div>
               )}
               {ref ? (
                 <div className="mt-2 flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs text-ok">
-                  <CheckCircle2 size={14} /> Paid {inr(b.amount)} · Ref {ref} · reaches {card.issuer} in 24–48 hrs
+                  <CheckCircle2 size={14} /> Paid {inr(b.amount)} · Ref {ref} · reaches {card.issuer} in 1–2 days
                 </div>
               ) : (
                 <button onClick={() => pay(b.cardId)} disabled={paying !== null}

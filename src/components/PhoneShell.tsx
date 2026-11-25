@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronRight, Presentation, RotateCcw, X } from 'lucide-react';
-import type { Tier } from '../types';
+import { LEVEL_NAME, type Tier } from '../types';
 
 interface Props {
   personaId: 'eldo' | 'nivin';
@@ -15,9 +15,9 @@ interface Props {
 }
 
 const TIERS: { t: Tier; name: string; sub: string }[] = [
-  { t: 0, name: 'Tier 0', sub: 'Zero-data (card names)' },
-  { t: 1, name: 'Tier 1', sub: 'PDF statement + BBPS' },
-  { t: 2, name: 'Tier 2', sub: 'RBI AA live sync (V2)' },
+  { t: 0, name: 'Tier 0', sub: 'Card names only' },
+  { t: 1, name: 'Tier 1', sub: 'Statement added' },
+  { t: 2, name: 'Tier 2', sub: 'Bank auto-sync' },
 ];
 
 function Controls(p: Props) {
@@ -56,7 +56,7 @@ function Controls(p: Props) {
           <li>Eldo, Tier 0: tap <b>₹40,000 flights on MakeMyTrip</b>. Millennia caps at ₹20,000.</li>
           <li>Rewards tab: <b>Use sample statement PDF</b>. Watch redaction, then fee-waiver and lounge bars.</li>
           <li>Nivin, Tier 1: tap <b>₹18,000 electronics at Croma</b>. SBI has only ₹700 cap left.</li>
-          <li>Consent tab: <b>Erase all my data</b>. Back to Tier 0.</li>
+          <li>Privacy tab: <b>Erase all my data</b>. Back to Tier 0.</li>
         </ol>
       </section>
       <button onClick={p.onReset} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 hover:bg-gray-50">
@@ -105,7 +105,7 @@ export default function PhoneShell(p: Props) {
                 <Presentation size={13} /> Demo
               </button>
             )}
-            <span className="rounded-full bg-cyan px-2.5 py-1 text-[11px] font-semibold text-navy">Tier {p.tier}</span>
+            <span className="rounded-full bg-cyan px-2.5 py-1 text-[11px] font-semibold text-navy">{LEVEL_NAME[p.tier]}</span>
           </div>
         </div>
       </header>

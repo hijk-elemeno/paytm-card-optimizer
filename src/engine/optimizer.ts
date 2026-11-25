@@ -55,7 +55,7 @@ export function recommend(q: ParsedQuery, cardIds: string[], states: Record<stri
     const ranked = cards
       .map((card) => {
         const v = amount * card.baseRate;
-        return { card, effective: card.baseRate, calc: { value: v, excluded: false, caps: [], formula: [`Base rate only (${card.baseLabel}) × ₹${amount.toLocaleString('en-IN')} = ₹${Math.round(v).toLocaleString('en-IN')}`] } };
+        return { card, effective: card.baseRate, calc: { value: v, excluded: false, caps: [], formula: [`What it gives anywhere (${card.baseLabel}) × ₹${amount.toLocaleString('en-IN')} = ₹${Math.round(v).toLocaleString('en-IN')}`] } };
       })
       .sort((a, b) => b.calc.value - a.calc.value)
       .slice(0, 2);

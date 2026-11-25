@@ -8,15 +8,15 @@ import type { AppState } from '../App';
 const GROUP: Record<Category, string> = {
   flights: 'Travel', hotels: 'Travel', cabs: 'Travel', online_shopping: 'Online shopping', electronics: 'Online shopping',
   dining: 'Dining & food', food_delivery: 'Dining & food', groceries: 'Groceries', utilities: 'Bills & utilities', telecom: 'Bills & utilities',
-  movies: 'Entertainment', rent: 'Excluded (rent, fuel)', fuel: 'Excluded (rent, fuel)', wallet: 'Excluded (rent, fuel)', unknown: 'Other',
+  movies: 'Entertainment', rent: 'No rewards (rent, fuel)', fuel: 'No rewards (rent, fuel)', wallet: 'No rewards (rent, fuel)', unknown: 'Other',
 };
 
 const CAPS = [
-  { card: 'hdfc_millennia', bucket: 'partner', label: '5% partner cap', cap: 1000 },
-  { card: 'hdfc_millennia', bucket: 'other', label: '1% other-spends cap', cap: 1000 },
-  { card: 'sbi_cashback', bucket: 'all', label: 'monthly cashback cap', cap: 5000 },
-  { card: 'axis_airtel', bucket: 'food', label: 'food and grocery cap', cap: 500 },
-  { card: 'axis_airtel', bucket: 'util', label: 'utilities cap', cap: 250 },
+  { card: 'hdfc_millennia', bucket: 'partner', label: 'partner brands (5%)', cap: 1000 },
+  { card: 'hdfc_millennia', bucket: 'other', label: 'everything else (1%)', cap: 1000 },
+  { card: 'sbi_cashback', bucket: 'all', label: 'all cashback', cap: 5000 },
+  { card: 'axis_airtel', bucket: 'food', label: 'food and groceries', cap: 500 },
+  { card: 'axis_airtel', bucket: 'util', label: 'bills', cap: 250 },
 ];
 
 function RemindBtn({ id, on, set, toggle }: { id: string; on: boolean; set: Set<string>; toggle: (id: string) => void }) {
@@ -44,8 +44,8 @@ function PerkDecoder({ cards }: { cards: string[] }) {
   const [open, setOpen] = useState<string | null>(cards[0] ?? null);
   return (
     <section className="rounded-2xl bg-white p-4 shadow-sm">
-      <h2 className="font-semibold text-navy">Perk decoder</h2>
-      <p className="text-xs text-gray-500">Your card terms in plain English</p>
+      <h2 className="font-semibold text-navy">Your card benefits</h2>
+      <p className="text-xs text-gray-500">What each card gives you, in plain words</p>
       <ul className="mt-2 divide-y divide-gray-100">
         {cards.map((id) => {
           const c = cardById(id);
@@ -84,8 +84,8 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
           </div>
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 p-6 text-center">
             <Lock className="text-navy" />
-            <div className="mt-2 font-semibold text-navy">Spend tracker, milestones and voucher vault</div>
-            <button onClick={onUnlock} className="mt-3 rounded-xl bg-navy px-4 py-2.5 text-sm font-semibold text-white">Upload 1 Encrypted PDF to Unlock (Zero Gmail Access)</button>
+            <div className="mt-2 font-semibold text-navy">Your spends, rewards and expiring vouchers</div>
+            <button onClick={onUnlock} className="mt-3 rounded-xl bg-navy px-4 py-2.5 text-sm font-semibold text-white">Add 1 statement PDF to see this</button>
           </div>
         </section>
         <PerkDecoder cards={state.selectedCards} />
@@ -98,13 +98,13 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
     const g = GROUP[MERCHANTS.find((m) => m.id === t.merchantId)!.category];
     totals[g] = (totals[g] ?? 0) + t.amount;
   }
-  const data = Object.entries(totals).map(([name, value]) => ({ name, value })).sort((a, b) => (a.name.startsWith('Excluded') ? 1 : b.name.startsWith('Excluded') ? -1 : b.value - a.value));
+  const data = Object.entries(totals).map(([name, value]) => ({ name, value })).sort((a, b) => (a.name.startsWith('No rewards') ? 1 : b.name.startsWith('No rewards') ? -1 : b.value - a.value));
   const total = p.monthly.reduce((s, t) => s + t.amount, 0);
   const caps = CAPS.filter((c) => p.cards.includes(c.card));
   const util = p.monthly.find((t) => t.merchantId === 'electricity');
 
   const toggleRemind = (id: string) => {
-    if (!state.remindersOn) { notify('Reminders are off. Turn them on in Consent.'); return; }
+    if (!state.remindersOn) { notify('Reminders are off. Turn them on in Privacy.'); return; }
     setReminders((r) => { const n = new Set(r); if (n.has(id)) n.delete(id); else n.add(id); return n; });
     notify(reminders.has(id) ? 'Reminder removed' : 'Reminder set: 14 days and 2 days before (max 3 nudges a week)');
   };
@@ -115,8 +115,8 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
   return (
     <div className="space-y-4 p-4">
       <div className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs ${state.tier === 2 ? 'bg-emerald-50 text-ok' : 'bg-white text-gray-600 shadow-sm'}`}>
-        {state.tier === 2 ? <span className="flex items-center gap-1.5"><Radio size={14} /> Live via Account Aggregator · synced 2 min ago</span> : <span>From your Nov statement (PDF deleted after parsing)</span>}
-        {state.tier === 1 && <button onClick={onLive} className="font-semibold text-navy">Enable Live Cap Sync (RBI AA)</button>}
+        {state.tier === 2 ? <span className="flex items-center gap-1.5"><Radio size={14} /> Auto-synced with your banks · 2 min ago</span> : <span>From your Nov statement (PDF deleted)</span>}
+        {state.tier === 1 && <button onClick={onLive} className="font-semibold text-navy">Turn on auto-sync</button>}
       </div>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
@@ -132,7 +132,7 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
               <YAxis type="category" dataKey="name" width={118} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#475569' }} />
               <Tooltip cursor={{ fill: '#EBF8FF' }} formatter={(v: number) => [inr(v), 'Spent']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
               <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                {data.map((d) => <Cell key={d.name} fill={d.name.startsWith('Excluded') ? '#CBD5E1' : '#00BAF2'} />)}
+                {data.map((d) => <Cell key={d.name} fill={d.name.startsWith('No rewards') ? '#CBD5E1' : '#00BAF2'} />)}
                 <LabelList dataKey="value" position="right" formatter={(v: number) => inr(v)} style={{ fontSize: 11, fill: '#0F172A' }} />
               </Bar>
             </BarChart>
@@ -143,8 +143,8 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
 
       {caps.length > 0 && (
         <section className="rounded-2xl bg-white p-4 shadow-sm">
-          <h2 className="font-semibold text-navy">Reward caps used this cycle</h2>
-          <p className="text-xs text-gray-500">Best Card answers use these, so a full cap is never recommended.</p>
+          <h2 className="font-semibold text-navy">Monthly cashback limits</h2>
+          <p className="text-xs text-gray-500">We use these so we never suggest a card that has stopped paying.</p>
           <div className="mt-2 space-y-3">
             {caps.map((c) => {
               const used = p.state[c.card]?.capUsed[c.bucket] ?? 0;
@@ -161,7 +161,7 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
       )}
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="font-semibold text-navy">Milestones and fee waivers</h2>
+        <h2 className="font-semibold text-navy">Spend goals</h2>
         <div className="mt-2 space-y-4">
           {p.milestones.map((m) => {
             const left = m.target - m.done;
@@ -188,8 +188,8 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
       </section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="font-semibold text-navy">Expiry vault</h2>
-        <p className="text-xs text-gray-500">Points and vouchers you could lose. Nudges at most 3 a week.</p>
+        <h2 className="font-semibold text-navy">Expiring soon</h2>
+        <p className="text-xs text-gray-500">Points and vouchers you could lose. We remind you at most 3 times a week.</p>
         <ul className="mt-2 space-y-2">
           {p.vouchers.map((v) => (
             <li key={v.title} className="rounded-xl border border-gray-100 p-3">

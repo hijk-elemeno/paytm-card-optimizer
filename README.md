@@ -9,7 +9,7 @@ This is a case study prototype. It is not a Paytm product, and every card, cap a
 |---|---|
 | 1. Entry on credit card bill pay | Bill-pay screen with "Your cards could earn more → Check my cards" |
 | 2. Add cards, Tier 0 (names only) | Card pills, "Zero Gmail/SMS Access • Zero Sales-Call Pledge" |
-| 3. Cards home | My cards, best card by category, expiring voucher, BBPS dues with a T-4 nudge |
+| 3. Cards home | My cards, best card by category, expiring voucher, BBPS dues with a reminder to pay 4 days early |
 | 4. Ask "Which card for this?" | Cap-aware answer with ₹ and %, Why not #2, calculation proof, rule date, Verify / Report error |
 | 5. Insights, Tier 1 (statement PDF) | Sample PDF with on-device redaction, then spends chart, fee-waiver and lounge bars, milestone router, expiry vault |
 | 6. Consent centre | Tier 0/1/2 status, AA consent artefact (Tier 2), Zero Sales-Call toggle, Erase all my data |
@@ -24,7 +24,7 @@ This is a case study prototype. It is not a Paytm product, and every card, cap a
 1. **Eldo, Tier 0:** tap **₹40,000 flights on MakeMyTrip**. Millennia hits its ₹1,000 cap at ₹20,000, so it earns 2.5%.
 2. **Rewards:** tap **Use sample statement PDF**. You see the redaction, the ₹5,500 fee-waiver gap, and the lounge gap of ₹12,000.
 3. **Nivin, Tier 1:** tap **₹18,000 electronics at Croma**. SBI has only ₹700 of cap left, so Regalia Gold wins at ₹1,740 because this spend crosses its milestone.
-4. **Consent:** tap **Erase all my data**. The app is back at Tier 0.
+4. **Privacy:** tap **Erase all my data**. The app is back at Tier 0.
 
 ## Run locally
 ```bash
