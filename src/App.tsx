@@ -120,7 +120,7 @@ export default function App() {
             onAaDone={(offers) => { setTier(2); setModal(null); if (offers) setUpgradeOptIn(true); notify('Live cap sync on via RBI Account Aggregator'); }}
           />
           {toast && (
-            <div role="status" className="absolute left-4 right-4 top-24 z-50 fade-up rounded-xl bg-navy text-white text-sm px-4 py-3 shadow-lg">
+            <div role="status" className="absolute inset-x-4 top-24 z-50 mx-auto max-w-[600px] fade-up rounded-xl bg-navy text-white text-sm px-4 py-3 shadow-lg">
               {toast}
             </div>
           )}

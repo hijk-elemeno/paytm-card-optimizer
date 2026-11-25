@@ -152,7 +152,7 @@ function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlo
 
       {bill && (
         <button onClick={onPayBill} className="mt-3 flex w-full items-center justify-between rounded-xl bg-canvas px-3 py-2 text-xs text-gray-700">
-          <span>Then pay the {win.card.name} bill on Paytm · due {bill.dueDay} Dec</span><span className="font-semibold text-navy">Pay →</span>
+          <span className="text-left">Then pay the {win.card.name} bill on Paytm · due {bill.dueDay} Dec</span><span className="shrink-0 pl-2 font-semibold text-navy">Pay →</span>
         </button>
       )}
       {travel && (
@@ -187,7 +187,7 @@ export default function BestCardAI({ state, chat, setChat, pending, clearPending
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [chat.length, busy]);
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex flex-1 flex-col">
       <div className="flex-1 space-y-4 p-4">
         {chat.length === 0 && !busy && (
           <div className="rounded-2xl bg-white p-4 shadow-sm">

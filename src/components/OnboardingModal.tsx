@@ -25,7 +25,7 @@ const REDACTION = [
 function Sheet({ title, onClose, children }: { title: string; onClose?: () => void; children: React.ReactNode }) {
   return (
     <div className="absolute inset-0 z-40 flex items-end bg-black/45" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="fade-up max-h-[92%] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl">
+      <div className="fade-up mx-auto max-h-[92%] w-full max-w-[640px] overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom, 0px))' }}>
         <div className="mb-3 flex items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-navy leading-snug">{title}</h2>
           {onClose && <button onClick={onClose} aria-label="Close" className="text-gray-400 hover:text-gray-700"><X size={20} /></button>}
@@ -130,11 +130,13 @@ export default function OnboardingModal(p: Props) {
     const card = CARDS.find((c) => c.id === bill.cardId)!;
     return (
       <div className="absolute inset-0 z-40 flex flex-col bg-canvas" role="dialog" aria-modal="true" aria-label="Credit card bill pay">
-        <div className="bg-navy px-5 pb-6 pt-5 md:pt-8 text-white">
+        <div className="bg-navy px-5 pb-6 text-white" style={{ paddingTop: 'max(32px, calc(env(safe-area-inset-top, 0px) + 16px))' }}>
+          <div className="mx-auto max-w-[640px]">
           <div className="text-xs text-white/70">Paytm · Recharge & Bills</div>
           <h2 className="text-xl font-semibold">Credit Card Bill Payment</h2>
+          </div>
         </div>
-        <div className="-mt-4 space-y-3 px-4">
+        <div className="-mt-4 mx-auto w-full max-w-[640px] space-y-3 overflow-y-auto px-4 pb-4">
           <div className="rounded-2xl bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
               <span className="rounded-xl p-2 text-white" style={{ background: card.color }}><CreditCard size={20} /></span>

@@ -69,13 +69,17 @@ function Controls(p: Props) {
   );
 }
 
+// Phone frame + side panel only when there is room for both; otherwise the app fills the screen.
+const FRAME_MQ = '(min-width: 900px) and (min-height: 620px)';
+
 export default function PhoneShell(p: Props) {
   const [open, setOpen] = useState(true);
   const [sheet, setSheet] = useState(false);
-  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
+  const [frame, setFrame] = useState(() => typeof window !== 'undefined' && window.matchMedia(FRAME_MQ).matches);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const on = () => setMobile(mq.matches);
+    const mq = window.matchMedia(FRAME_MQ);
+    const on = () => setFrame(mq.matches);
+    on();
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
   }, []);
@@ -83,65 +87,80 @@ export default function PhoneShell(p: Props) {
   useEffect(() => { mainRef.current?.scrollTo({ top: 0 }); }, [p.scrollKey]);
 
   const app = (
-    <div className="relative flex h-full flex-col overflow-hidden bg-canvas text-gray-900">
-      <header className="bg-navy text-white px-4 pt-3 md:pt-6 pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-white/70">Paytm · Credit Card Bill Pay</div>
+    <div data-phone className="relative flex h-full flex-col overflow-hidden bg-canvas text-gray-900">
+      <header className="bg-navy text-white pb-3" style={frame ? { padding: '24px 16px 12px' } : {
+        paddingTop: 'max(12px, env(safe-area-inset-top, 0px))',
+        paddingLeft: 'max(16px, env(safe-area-inset-left, 0px))',
+        paddingRight: 'max(16px, env(safe-area-inset-right, 0px))',
+      }}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="short-hide truncate text-[11px] text-white/70">Paytm · Credit Card Bill Pay</div>
             <h1 className="text-lg font-semibold leading-tight">Card Optimizer</h1>
           </div>
-          <span className="rounded-full bg-cyan px-2.5 py-1 text-[11px] font-semibold text-navy">Tier {p.tier}</span>
+          <div className="flex shrink-0 items-center gap-2">
+            {!frame && (
+              <button onClick={() => setSheet(true)} aria-label="Open demo controls"
+                className="inline-flex items-center gap-1 rounded-full border border-white/30 px-2.5 py-1 text-[11px] font-semibold text-white">
+                <Presentation size={13} /> Demo
+              </button>
+            )}
+            <span className="rounded-full bg-cyan px-2.5 py-1 text-[11px] font-semibold text-navy">Tier {p.tier}</span>
+          </div>
         </div>
       </header>
       <div className="bg-amber-50 text-amber-900 text-[10.5px] px-4 py-1 border-b border-amber-200">
         Case study prototype · not a Paytm product · sample data only
       </div>
-      <main ref={mainRef} className="flex-1 overflow-y-auto no-scrollbar">{p.children}</main>
-      {p.nav}
+      <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain no-scrollbar">
+        <div className={`flex min-h-full flex-col ${frame ? '' : 'mx-auto w-full max-w-[640px]'}`}>{p.children}</div>
+      </main>
+      <div style={frame ? undefined : { paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} className="bg-white">
+        <div className={frame ? '' : 'mx-auto w-full max-w-[640px]'}>{p.nav}</div>
+      </div>
       {p.overlay}
     </div>
   );
 
-  return (
-    <div className="min-h-full w-full">
-      {/* Mobile: full-screen app */}
-      <div className="md:hidden h-[100dvh]">
-        {mobile && app}
-        <button onClick={() => setSheet(true)} aria-label="Open demo controls"
-          className="fixed right-3 bottom-20 z-[60] rounded-full bg-white/90 p-2 text-navy shadow"><Presentation size={18} /></button>
+  if (!frame) {
+    return (
+      <div className="h-[100dvh] w-full">
+        {app}
         {sheet && (
           <div className="fixed inset-0 z-[70] bg-black/40" onClick={() => setSheet(false)}>
-            <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute inset-x-0 bottom-0 mx-auto max-h-[85dvh] max-w-[640px] overflow-y-auto rounded-t-2xl bg-white p-4"
+              style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))' }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-semibold text-navy">Interviewer demo controls</h2>
                 <button onClick={() => setSheet(false)} aria-label="Close"><X size={18} /></button>
               </div>
-              <Controls {...p} />
+              <Controls {...p} onPersona={(id) => { p.onPersona(id); setSheet(false); }} onTier={(t) => { p.onTier(t); setSheet(false); }} onReset={() => { p.onReset(); setSheet(false); }} />
             </div>
           </div>
         )}
       </div>
+    );
+  }
 
-      {/* Desktop: phone frame + controls */}
-      <div className="hidden md:flex min-h-screen items-center justify-center gap-8 p-6">
-        <div className="relative h-[min(880px,calc(100vh-48px))] w-[412px] shrink-0 rounded-[48px] border-[12px] border-gray-900 bg-gray-900 shadow-2xl">
-          <div className="absolute left-1/2 top-0 z-[5] h-5 w-28 -translate-x-1/2 rounded-b-2xl bg-gray-900" />
-          <div className="h-full overflow-hidden rounded-[36px]">{!mobile && app}</div>
-        </div>
-        {open ? (
-          <aside className="w-[320px] shrink-0 rounded-2xl bg-white/95 p-5 shadow-xl text-gray-900">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-navy flex items-center gap-2"><Presentation size={18} /> Interviewer demo controls</h2>
-              <button onClick={() => setOpen(false)} aria-label="Collapse controls" className="text-gray-500 hover:text-gray-800"><X size={18} /></button>
-            </div>
-            <Controls {...p} />
-          </aside>
-        ) : (
-          <button onClick={() => setOpen(true)} className="self-start mt-10 inline-flex items-center gap-1 rounded-full bg-white px-3 py-2 text-sm font-medium text-navy shadow">
-            Demo controls <ChevronRight size={16} />
-          </button>
-        )}
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center gap-8 p-6">
+      <div className="relative h-[min(880px,calc(100vh-48px))] w-[412px] shrink-0 rounded-[48px] border-[12px] border-gray-900 bg-gray-900 shadow-2xl">
+        <div className="absolute left-1/2 top-0 z-[5] h-5 w-28 -translate-x-1/2 rounded-b-2xl bg-gray-900" />
+        <div className="h-full overflow-hidden rounded-[36px]">{app}</div>
       </div>
+      {open ? (
+        <aside className="max-h-[calc(100vh-48px)] w-[320px] shrink-0 overflow-y-auto rounded-2xl bg-white/95 p-5 text-gray-900 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-navy flex items-center gap-2"><Presentation size={18} /> Interviewer demo controls</h2>
+            <button onClick={() => setOpen(false)} aria-label="Collapse controls" className="text-gray-500 hover:text-gray-800"><X size={18} /></button>
+          </div>
+          <Controls {...p} />
+        </aside>
+      ) : (
+        <button onClick={() => setOpen(true)} className="self-start mt-10 inline-flex items-center gap-1 rounded-full bg-white px-3 py-2 text-sm font-medium text-navy shadow">
+          Demo controls <ChevronRight size={16} />
+        </button>
+      )}
     </div>
   );
 }

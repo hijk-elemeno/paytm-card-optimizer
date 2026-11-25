@@ -12,3 +12,5 @@ body { margin: 0; background: var(--page-bg); color: var(--page-fg); font-family
 .no-scrollbar { scrollbar-width: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .fade-up { animation: fadeUp .25s ease-out both; }
+
+@media (max-height: 500px) { .short-hide { display: none; } }
