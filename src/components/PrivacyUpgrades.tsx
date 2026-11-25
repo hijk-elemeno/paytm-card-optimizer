@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, Lock, Minus, PhoneOff, Scale, Trash2 } from 'lucide-react';
+import { BellRing, Check, Lock, Minus, PhoneOff, Scale, Trash2 } from 'lucide-react';
 import { cardById } from '../data/cardRules';
 import { inr, upgradeOptions } from '../engine/optimizer';
 import { maskOf } from '../types';
@@ -11,6 +11,8 @@ interface Props {
   onUnlock: () => void;
   onLive: () => void;
   onEditCards: () => void;
+  onRevoke: (tier: 1 | 2) => void;
+  setRemindersOn: (v: boolean) => void;
   setUpgradeOptIn: (v: boolean) => void;
   setSalesCallLock: (v: boolean) => void;
 }
@@ -26,7 +28,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
   );
 }
 
-export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEditCards, setUpgradeOptIn, setSalesCallLock }: Props) {
+export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEditCards, onRevoke, setRemindersOn, setUpgradeOptIn, setSalesCallLock }: Props) {
   const [confirm, setConfirm] = useState(false);
   const p = state.persona;
   const options = useMemo(() => upgradeOptions(p.cards, p.monthly), [p]);
@@ -35,8 +37,8 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
 
   const tiers = [
     { n: 0, title: 'Tier 0 · card names', on: true, detail: 'Card name and last 4 digits, on this phone', action: <button onClick={onEditCards} className="text-xs font-semibold text-navy">Edit</button> },
-    { n: 1, title: 'Tier 1 · Nov statement', on: state.tier >= 1, detail: state.tier >= 1 ? 'Merchant category and amount only. PDF deleted after parsing' : 'Not shared', action: state.tier < 1 ? <button onClick={onUnlock} className="text-xs font-semibold text-navy">Add</button> : null },
-    { n: 2, title: 'Tier 2 · Account Aggregator', on: state.tier >= 2, detail: state.tier >= 2 ? 'Consent AA-PAYTM-2026-8841 · valid till 1 Mar 2027' : 'Not shared', action: state.tier < 2 ? <button onClick={onLive} className="text-xs font-semibold text-navy">Enable</button> : null },
+    { n: 1, title: 'Tier 1 · Nov statement', on: state.tier >= 1, detail: state.tier >= 1 ? 'Merchant category and amount only. PDF deleted after parsing' : 'Not shared', action: state.tier < 1 ? <button onClick={onUnlock} className="text-xs font-semibold text-navy">Add</button> : <button onClick={() => onRevoke(1)} className="text-xs font-semibold text-alert">Delete</button> },
+    { n: 2, title: 'Tier 2 · Account Aggregator', on: state.tier >= 2, detail: state.tier >= 2 ? 'Consent AA-PAYTM-2026-8841 · valid till 1 Mar 2027' : 'Not shared', action: state.tier < 2 ? <button onClick={onLive} className="text-xs font-semibold text-navy">Enable</button> : <button onClick={() => onRevoke(2)} className="text-xs font-semibold text-alert">Revoke</button> },
   ];
 
   return (
@@ -62,6 +64,15 @@ export default function PrivacyUpgrades({ state, onErase, onUnlock, onLive, onEd
           ))}
         </div>
         <p className="mt-3 text-[11px] text-gray-500">Never collected: full card number, CVV, Gmail, SMS.</p>
+      </section>
+
+      <section className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
+        <BellRing size={20} className="text-navy" />
+        <div className="flex-1">
+          <div className="text-sm font-semibold">Reminders</div>
+          <div className="text-xs text-gray-500">Expiring rewards, milestones and dues. Never more than 3 a week.</div>
+        </div>
+        <Toggle on={state.remindersOn} onChange={setRemindersOn} label="Reminders" />
       </section>
 
       <section className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">

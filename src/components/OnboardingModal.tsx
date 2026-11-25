@@ -161,6 +161,13 @@ export default function OnboardingModal(p: Props) {
   }
   if (p.kind !== 'tier0') return null;
 
+  return <CardPicker {...p} />;
+}
+
+function CardPicker(p: Props) {
+  const [q, setQ] = useState('');
+  const [requested, setRequested] = useState(false);
+  const list = CARDS.filter((c) => (c.name + ' ' + c.issuer).toLowerCase().includes(q.trim().toLowerCase()));
   const toggle = (id: string) => p.setSelected(p.selected.includes(id) ? p.selected.filter((x) => x !== id) : [...p.selected, id]);
   return (
     <Sheet title="Which credit cards do you have?">
@@ -168,8 +175,10 @@ export default function OnboardingModal(p: Props) {
       <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-cyan-tint px-3 py-1.5 text-xs font-semibold text-navy">
         <ShieldCheck size={14} /> Zero Gmail/SMS Access • Zero Sales-Call Pledge
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {CARDS.map((c) => {
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search your card, e.g. Millennia" aria-label="Search cards"
+        className="mt-4 w-full rounded-xl border border-gray-300 px-3 py-2.5 text-base outline-none focus:border-navy" />
+      <div className="mt-3 flex flex-wrap gap-2">
+        {list.map((c) => {
           const on = p.selected.includes(c.id);
           return (
             <button key={c.id} onClick={() => toggle(c.id)} aria-pressed={on}
@@ -179,6 +188,13 @@ export default function OnboardingModal(p: Props) {
           );
         })}
       </div>
+      {list.length === 0 && (
+        <div className="mt-1 rounded-xl bg-canvas p-3 text-sm text-gray-600">
+          Card not in our list yet.{' '}
+          {requested ? <span className="font-semibold text-ok">Requested. Ops adds new cards after a rules check.</span>
+            : <button onClick={() => setRequested(true)} className="font-semibold text-navy">Request it</button>}
+        </div>
+      )}
       <button disabled={!p.selected.length} onClick={p.onTier0Done}
         className="mt-5 w-full rounded-xl bg-navy py-3 font-semibold text-white disabled:opacity-40">
         Continue with {p.selected.length} card{p.selected.length === 1 ? '' : 's'}

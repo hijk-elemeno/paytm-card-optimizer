@@ -15,6 +15,7 @@ export interface AppState {
   selectedCards: string[];
   upgradeOptIn: boolean;
   salesCallLock: boolean;
+  remindersOn: boolean;
   paid: Record<string, string>;
 }
 
@@ -35,6 +36,7 @@ export default function App() {
   const [chat, setChat] = useState<ChatEntry[]>([]);
   const [upgradeOptIn, setUpgradeOptIn] = useState(false);
   const [salesCallLock, setSalesCallLock] = useState(true);
+  const [remindersOn, setRemindersOn] = useState(true);
   const [paid, setPaid] = useState<Record<string, string>>({});
   const [pendingAsk, setPendingAsk] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -70,13 +72,13 @@ export default function App() {
   };
 
   const cardIds = tier === 0 ? selectedCards : persona.cards;
-  const state: AppState = { persona, tier, selectedCards: cardIds, upgradeOptIn, salesCallLock, paid };
+  const state: AppState = { persona, tier, selectedCards: cardIds, upgradeOptIn, salesCallLock, remindersOn, paid };
 
   const ask = (q: string) => { setPendingAsk(q); setTab('ask'); };
   const screen = {
     home: <CardsHome state={state} onAsk={ask} onUnlock={() => setModal('pdf')} onTab={setTab}
       onPaid={(id, ref) => { setPaid((p) => ({ ...p, [id]: ref })); notify('Paid via Paytm UPI. Bank credit in 24-48 hrs.'); }} />,
-    ask: <BestCardAI state={state} chat={chat} setChat={setChat} pending={pendingAsk} clearPending={() => setPendingAsk(null)} onUnlock={() => setModal('pdf')} notify={notify} />,
+    ask: <BestCardAI state={state} chat={chat} setChat={setChat} pending={pendingAsk} clearPending={() => setPendingAsk(null)} onUnlock={() => setModal('pdf')} notify={notify} onPayBill={() => setTab('home')} />,
     rewards: <SpendDashboard state={state} onUnlock={() => setModal('pdf')} onLive={() => setModal('aa')} notify={notify} />,
     consent: (
       <PrivacyUpgrades
@@ -85,6 +87,11 @@ export default function App() {
         onUnlock={() => setModal('pdf')}
         onLive={() => setModal('aa')}
         onEditCards={() => setModal('tier0')}
+        onRevoke={(t) => {
+          if (t === 2) { setTier(1); notify('Account Aggregator consent revoked. Live sync stopped.'); }
+          else { setTier(0); setUpgradeOptIn(false); notify('Statement data deleted. You are on Tier 0.'); }
+        }}
+        setRemindersOn={(v) => { setRemindersOn(v); notify(v ? 'Reminders on (max 3 a week)' : 'All reminders off'); }}
         setUpgradeOptIn={setUpgradeOptIn}
         setSalesCallLock={(v) => { setSalesCallLock(v); notify(v ? 'Zero Sales-Call lock on' : 'Lock off: still no calls without a fresh opt-in'); }}
       />

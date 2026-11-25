@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ChevronDown, Copy, Gift, Lock, Plane, Radio, Route, Ticket, Trophy } from 'lucide-react';
+import { Bell, ChevronDown, Copy, Gift, Lock, Plane, Radio, Route, Ticket, Trophy } from 'lucide-react';
 import { MERCHANTS, cardById, type Category } from '../data/cardRules';
 import { inr } from '../engine/optimizer';
 import type { AppState } from '../App';
@@ -10,6 +10,24 @@ const GROUP: Record<Category, string> = {
   dining: 'Dining & food', food_delivery: 'Dining & food', groceries: 'Groceries', utilities: 'Bills & utilities', telecom: 'Bills & utilities',
   movies: 'Entertainment', rent: 'Excluded (rent, fuel)', fuel: 'Excluded (rent, fuel)', wallet: 'Excluded (rent, fuel)', unknown: 'Other',
 };
+
+const CAPS = [
+  { card: 'hdfc_millennia', bucket: 'partner', label: '5% partner cap', cap: 1000 },
+  { card: 'hdfc_millennia', bucket: 'other', label: '1% other-spends cap', cap: 1000 },
+  { card: 'sbi_cashback', bucket: 'all', label: 'monthly cashback cap', cap: 5000 },
+  { card: 'axis_airtel', bucket: 'food', label: 'food and grocery cap', cap: 500 },
+  { card: 'axis_airtel', bucket: 'util', label: 'utilities cap', cap: 250 },
+];
+
+function RemindBtn({ id, on, set, toggle }: { id: string; on: boolean; set: Set<string>; toggle: (id: string) => void }) {
+  const active = on && set.has(id);
+  return (
+    <button onClick={() => toggle(id)} aria-pressed={active}
+      className={`mt-2 mr-2 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium ${active ? 'border-ok bg-emerald-50 text-ok' : 'border-gray-200 text-gray-600'}`}>
+      <Bell size={12} /> {active ? 'Reminder set' : 'Remind me'}
+    </button>
+  );
+}
 
 interface Props { state: AppState; onUnlock: () => void; onLive: () => void; notify: (m: string) => void }
 
@@ -54,6 +72,7 @@ function PerkDecoder({ cards }: { cards: string[] }) {
 
 export default function SpendDashboard({ state, onUnlock, onLive, notify }: Props) {
   const p = state.persona;
+  const [reminders, setReminders] = useState<Set<string>>(new Set());
   if (state.tier === 0) {
     return (
       <div className="space-y-4 p-4">
@@ -81,8 +100,14 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
   }
   const data = Object.entries(totals).map(([name, value]) => ({ name, value })).sort((a, b) => (a.name.startsWith('Excluded') ? 1 : b.name.startsWith('Excluded') ? -1 : b.value - a.value));
   const total = p.monthly.reduce((s, t) => s + t.amount, 0);
+  const caps = CAPS.filter((c) => p.cards.includes(c.card));
   const util = p.monthly.find((t) => t.merchantId === 'electricity');
 
+  const toggleRemind = (id: string) => {
+    if (!state.remindersOn) { notify('Reminders are off. Turn them on in Consent.'); return; }
+    setReminders((r) => { const n = new Set(r); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+    notify(reminders.has(id) ? 'Reminder removed' : 'Reminder set: 14 days and 2 days before (max 3 nudges a week)');
+  };
   const copy = async (code: string) => {
     try { await navigator.clipboard.writeText(code); notify(`Code ${code} copied`); } catch { notify(`Code: ${code}`); }
   };
@@ -116,6 +141,25 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
         <p className="text-[11px] text-gray-500">Grey: spends that earn no rewards on any of your cards.</p>
       </section>
 
+      {caps.length > 0 && (
+        <section className="rounded-2xl bg-white p-4 shadow-sm">
+          <h2 className="font-semibold text-navy">Reward caps used this cycle</h2>
+          <p className="text-xs text-gray-500">Best Card answers use these, so a full cap is never recommended.</p>
+          <div className="mt-2 space-y-3">
+            {caps.map((c) => {
+              const used = p.state[c.card]?.capUsed[c.bucket] ?? 0;
+              return (
+                <div key={c.card + c.bucket}>
+                  <div className="flex justify-between text-sm"><span>{cardById(c.card).name} · {c.label}</span><span className="tnum text-xs text-gray-600">{inr(used)} / {inr(c.cap)}</span></div>
+                  <Progress done={used} target={c.cap} />
+                  <div className="mt-0.5 text-[11px] text-gray-500">{inr(c.cap - used)} of cashback left</div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="font-semibold text-navy">Milestones and fee waivers</h2>
         <div className="mt-2 space-y-4">
@@ -131,10 +175,12 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
                 <Progress done={m.done} target={m.target} />
                 <div className="mt-1 text-xs font-semibold text-navy">Spend {inr(left)} more {m.deadline} to {m.reward}.</div>
                 {m.kind === 'fee' && util && (
-                  <div className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-cyan-tint px-2.5 py-1.5 text-[11px] text-navy">
-                    <Route size={13} className="mt-0.5 shrink-0" /> Pay your {inr(util.amount)} electricity bill on Paytm with {cardById(m.cardId).name} to close {Math.min(100, Math.round((util.amount / left) * 100))}% of this gap.
-                  </div>
+                  <button onClick={() => notify(`Opens Paytm electricity bill pay with ${cardById(m.cardId).name} selected (prototype).`)}
+                    className="mt-1.5 flex w-full items-start gap-1.5 rounded-lg bg-navy px-2.5 py-2 text-left text-[11px] font-semibold text-white">
+                    <Route size={13} className="mt-0.5 shrink-0" /> Pay {inr(util.amount)} electricity bill with {cardById(m.cardId).name}: closes {Math.min(100, Math.round((util.amount / left) * 100))}% of the gap
+                  </button>
                 )}
+                <RemindBtn id={m.label} on={state.remindersOn} set={reminders} toggle={toggleRemind} />
               </div>
             );
           })}
@@ -159,6 +205,7 @@ export default function SpendDashboard({ state, onUnlock, onLive, notify }: Prop
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${v.expiresInDays <= 14 ? 'bg-red-50 text-alert' : 'bg-amber-50 text-warn'}`}>Expires in {v.expiresInDays} days</span>
                 ) : <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">Unused</span>}
               </div>
+              <RemindBtn id={v.title} on={state.remindersOn} set={reminders} toggle={toggleRemind} />
               {v.code && (
                 <button onClick={() => copy(v.code!)} className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-navy">
                   <Copy size={12} /> Copy code {v.code}

@@ -22,6 +22,7 @@ interface Props {
   clearPending: () => void;
   onUnlock: () => void;
   notify: (m: string) => void;
+  onPayBill: () => void;
 }
 
 function capNotes(r: Ranked[], live: boolean) {
@@ -41,7 +42,7 @@ function capNotes(r: Ranked[], live: boolean) {
   return notes;
 }
 
-function Answer({ e, onUnlock, notify }: { e: ChatEntry; onUnlock: () => void; notify: (m: string) => void }) {
+function Answer({ e, onUnlock, notify, bill, onPayBill }: { e: ChatEntry; onUnlock: () => void; notify: (m: string) => void; bill?: { dueDay: number; amount: number }; onPayBill: () => void }) {
   const [open, setOpen] = useState(false);
   const o = e.outcome;
   const footer = (
@@ -149,6 +150,11 @@ function Answer({ e, onUnlock, notify }: { e: ChatEntry; onUnlock: () => void; n
         </div>
       )}
 
+      {bill && (
+        <button onClick={onPayBill} className="mt-3 flex w-full items-center justify-between rounded-xl bg-canvas px-3 py-2 text-xs text-gray-700">
+          <span>Then pay the {win.card.name} bill on Paytm · due {bill.dueDay} Dec</span><span className="font-semibold text-navy">Pay →</span>
+        </button>
+      )}
       {travel && (
         <button onClick={() => notify('Opens Paytm Travel with this search (prototype).')} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan bg-white py-2 text-xs font-semibold text-navy">
           <Plane size={14} /> Book via Paytm Travel to earn extra instant discount →
@@ -159,7 +165,7 @@ function Answer({ e, onUnlock, notify }: { e: ChatEntry; onUnlock: () => void; n
   );
 }
 
-export default function BestCardAI({ state, chat, setChat, pending, clearPending, onUnlock, notify }: Props) {
+export default function BestCardAI({ state, chat, setChat, pending, clearPending, onUnlock, notify, onPayBill }: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
@@ -192,7 +198,8 @@ export default function BestCardAI({ state, chat, setChat, pending, clearPending
         {chat.map((e) => (
           <div key={e.id} className="space-y-2 fade-up">
             <div className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-navy px-3 py-2 text-sm text-white">{e.q}</div>
-            <Answer e={e} onUnlock={onUnlock} notify={notify} />
+            <Answer e={e} onUnlock={onUnlock} notify={notify} onPayBill={onPayBill}
+              bill={e.outcome.kind === 'ranked' ? state.persona.bills.find((b) => e.outcome.kind === 'ranked' && b.cardId === e.outcome.ranked[0].card.id) : undefined} />
           </div>
         ))}
         {busy && <div className="w-fit rounded-2xl bg-white px-4 py-3 text-sm text-gray-500 shadow-sm">Checking caps and rules…</div>}

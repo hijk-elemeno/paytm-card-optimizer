@@ -27,6 +27,8 @@ export default function CardsHome({ state, onAsk, onUnlock, onTab, onPaid }: Pro
   const states = state.tier > 0 ? state.persona.state : null;
   const urgentVoucher = state.tier > 0 ? state.persona.vouchers.filter((v) => v.expiresInDays !== undefined).sort((a, b) => a.expiresInDays! - b.expiresInDays!)[0] : undefined;
 
+  const nextGap = state.tier > 0 ? state.persona.milestones.find((m) => m.kind === 'fee') : undefined;
+
   return (
     <div className="space-y-4 p-4">
       <section>
@@ -45,7 +47,13 @@ export default function CardsHome({ state, onAsk, onUnlock, onTab, onPaid }: Pro
         </div>
       </section>
 
-      {urgentVoucher ? (
+      {!urgentVoucher && nextGap ? (
+        <button onClick={() => onTab('rewards')} className="flex w-full items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left text-sm">
+          <Gift size={20} className="text-warn" />
+          <span className="flex-1"><b>{cardById(nextGap.cardId).name} {nextGap.label.toLowerCase()}:</b> ₹{(nextGap.target - nextGap.done).toLocaleString('en-IN')} to go {nextGap.deadline}</span>
+          <ChevronRight size={16} className="text-gray-400" />
+        </button>
+      ) : urgentVoucher ? (
         <button onClick={() => onTab('rewards')} className="flex w-full items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left text-sm">
           <Gift size={20} className="text-warn" />
           <span className="flex-1"><b>{urgentVoucher.title}</b> expires in {urgentVoucher.expiresInDays} days</span>
